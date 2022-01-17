@@ -5,9 +5,10 @@ public class Tictactoe{
     static Scanner input;
     static String [] board;
     static String winner;
-    static String player1;
-    static String player2;
+    
+    static String [] players;
 
+    //for checking board 
     static final int [] config = {
         1,2,3,
         4,5,6,
@@ -65,25 +66,22 @@ public class Tictactoe{
         return target == count;
     }
 
-    public static boolean hasWinner(){
-        for(int i = 0; i < config.length; i+=3){
-            if(pair(player1, 3, config[i], config[i+1], config[i+2])){
-                winner = player1;
-                return true;
-            } 
 
-            if(pair(player2, 3, config[i], config[i+1], config[i+2])){
-                winner = player2;
-                return true;
-            }
+    public static boolean hasWinner(){
+        for (String player : players) {
+            for(int i = 0; i < config.length; i+=3){
+                if(pair(player, 3, config[i], config[i+1], config[i+2])){
+                    winner = player;
+                    return true;
+                } 
+            } 
         }
         return false;
     }
 
+
     public static int getRandom(int max){
-    	int temp =  (int) (Math.random()*max);
-    	System.out.println("random called: "+temp);
-        return temp;
+    	return (int) Math.random()*max;
     }
 
     public static boolean hasNullGroup(int [] indexes){
@@ -93,7 +91,6 @@ public class Tictactoe{
         return false;
     }
 
-    //computer guess algo
     public static int guess(int [] data){
         int randomIndex = getRandom(data.length);
         while(!isNull(data[randomIndex])){
@@ -106,6 +103,8 @@ public class Tictactoe{
         
         // pririoty pick basi sa first move (0 = side | 1 = cross)
         int code = 0;
+        int [] side = {1,3,7,9};
+        int [] cross = {2,4,6,8};
 
         //priority center
         if(isNull(5)){
@@ -114,44 +113,37 @@ public class Tictactoe{
         }
         
 
-        //find possible bingo
-        for(int i = 0; i < config.length; i+=3){
-            //check self
-            if(pair(player2, 2, config[i], config[i+1], config[i+2])){
-                if(isNull(config[i])) return config[i];
-                if(isNull(config[i+1])) return config[i+1];
-                if(isNull(config[i+2])) return config[i+2];
-            }
-            //check opponent
-            if(pair(player1, 2, config[i], config[i+1], config[i+2])){
-                if(isNull(config[i])) return config[i];
-                if(isNull(config[i+1])) return config[i+1];
-                if(isNull(config[i+2])) return config[i+2];
+        //find possible bingo self before opponent
+        for (int player = players.length-1; player >= 0; player--) {
+            for(int i = 0; i < config.length; i+=3){
+                if(pair(players[player], 2, config[i], config[i+1], config[i+2])){
+                    if(isNull(config[i])) return config[i];
+                    if(isNull(config[i+1])) return config[i+1];
+                    if(isNull(config[i+2])) return config[i+2];
+                }
             }
         }
-
-       
-        int [] side = {1,3,7,9};
-        int [] cross = {2,4,6,8};
-
-
+     
         if(code == 0){
             if(hasNullGroup(cross)) return guess(cross);
             if(hasNullGroup(side)) return guess(side);
-        }else{
-            if(hasNullGroup(side)) return guess(side);
-            if(hasNullGroup(cross)) return guess(cross);
         }
+        
+        if(hasNullGroup(side)) return guess(side);
+        if(hasNullGroup(cross)) return guess(cross);
+        
 
         //error
         return -1;
     }
 
+
     public static void main(String[] args) {
         
         //player token
-        player1 = "X";
-        player2 = "O";
+        players = new String[2];
+        players[0]= "X";
+        players[1] = "O";
         
         //initialize board
         board = new String[9];
@@ -175,13 +167,13 @@ public class Tictactoe{
          while(!isBoardFull() && !hasWinner()){
 
             
-            while (!insertToBoard(player1,getUserInput()));
+            while (!insertToBoard(players[0],getUserInput()));
             displayBoard(board);
 
             //prevent sa computer mag tira pag may gana 
             if(isBoardFull() || hasWinner()) break;
 
-            insertToBoard(player2,getComputer());
+            insertToBoard(players[1],getComputer());
             displayBoard(board);
          }
 
@@ -193,6 +185,5 @@ public class Tictactoe{
             System.out.println("Winner | "+winner);
          }
         
-
     }
 }
